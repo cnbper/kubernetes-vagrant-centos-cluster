@@ -1,0 +1,30 @@
+[Unit]
+Description=Etcd Server
+After=network.target
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+WorkingDirectory=/opt/etcd/
+User=etcd
+# set GOMAXPROCS to number of processors
+ExecStart=/usr/local/sbin/etcd \
+  --name=etcd1 \
+  --cert-file=/etc/kubernetes/pki/etcd.pem \
+  --key-file=/etc/kubernetes/pki/etcd-key.pem \
+  --peer-cert-file=/etc/kubernetes/pki/etcd.pem \
+  --peer-key-file=/etc/kubernetes/pki/etcd-key.pem \
+  --trusted-ca-file=/etc/kubernetes/pki/ca.crt \
+  --peer-trusted-ca-file=/etc/kubernetes/pki/ca.crt \
+  --initial-advertise-peer-urls=https://172.17.8.101:2380 \
+  --listen-peer-urls=https://172.17.8.101:2380 \
+  --listen-client-urls=https://172.17.8.101:2379,http://127.0.0.1:2379 \
+  --advertise-client-urls=https://172.17.8.101:2379 \
+  --data-dir=/opt/etcd/
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,44 @@
+##################################################################################################
+# service template
+# 服务名：chestnut
+# 版本：v1.0
+# 暴露服务协议：http
+# 暴露服务端口：9080
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: chestnut
+  namespace: istio-samples
+  labels:
+    app: chestnut
+    service: chestnut
+spec:
+  ports:
+  - port: 9080
+    name: http
+  selector:
+    app: chestnut
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: chestnut-v1.0
+  namespace: istio-samples
+  labels:
+    app: chestnut
+    version: v1.0
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: chestnut
+        version: v1.0
+    spec:
+      containers:
+      - name: chestnut
+        image: registry.cmft.com/cmft/chestnut-v1.0:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9080
