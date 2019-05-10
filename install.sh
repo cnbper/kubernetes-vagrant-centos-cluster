@@ -137,6 +137,7 @@ then
     #   --image-repository registry.sloth.com/google_containers \
     #   --cert-dir=/etc/kubernetes/pki
 
+    mkdir -p /vagrant/temp/kubernetes
     rm -rf /vagrant/temp/kubernetes/worker-init.sh
 cat > /vagrant/temp/kubernetes/worker-init.sh<<EOF
 #!/bin/bash
