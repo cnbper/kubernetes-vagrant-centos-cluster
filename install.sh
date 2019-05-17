@@ -83,6 +83,11 @@ EOF
 chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules
 # check : `lsmod | grep -e ip_vs -e nf_conntrack_ipv4`
 
+cat >> ~/.bash_profile<< EOF
+export PATH=$PATH:/vagrant/bin
+EOF
+source ~/.bash_profile
+
 # 18.06 yum install -y docker-ce-18.06.3.ce-3.el7
 # 18.09 yum install -y docker-ce docker-ce-cli containerd.io
 yum localinstall -y /vagrant/rpm/docker/*.rpm
