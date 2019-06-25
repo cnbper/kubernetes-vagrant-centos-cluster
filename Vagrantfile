@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
     node.vm.provision "shell", path: "install.sh", args: [1, $master_ip, $etcd_cluster]
   end
 
-  $node_instances = 2
+  $node_instances=2
   (1..$node_instances).each do |i|
     config.vm.define "kube-node#{i}" do |node|
       node.vm.box = "centos/7"
@@ -30,8 +30,8 @@ Vagrant.configure("2") do |config|
       ip = "172.17.8.#{i+101}"
       node.vm.network "private_network", ip: ip
       node.vm.provider "virtualbox" do |vb|
-        # vb.memory = "2048"
-        vb.memory = "5120"
+        # vb.memory = "5120"
+        vb.memory = "4096"
         vb.cpus = 2
         vb.name = "kube-node#{i}"
       end

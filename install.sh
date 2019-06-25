@@ -85,6 +85,7 @@ chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipv
 
 cat >> ~/.bash_profile<< EOF
 export PATH=$PATH:/vagrant/bin
+export PATH=$PATH:/vagrant/tools/prometheus/prometheus-2.3.1.linux-amd64
 EOF
 source ~/.bash_profile
 
@@ -124,6 +125,11 @@ then
     cp /vagrant/config/etcd/etcd.service /etc/systemd/system/etcd.service
     systemctl daemon-reload && systemctl enable etcd && systemctl start etcd
 
+    # 启动prometheus
+    # useradd prometheus && mkdir -p /opt/prometheus && chown -R prometheus:prometheus /opt/prometheus
+    # cp /vagrant/config/prometheus/prometheus.service /etc/systemd/system/prometheus.service
+    # systemctl daemon-reload && systemctl enable prometheus && systemctl start prometheus
+
     echo "configure kube-master"
     # kubeadm config images list 
     # https://kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/
@@ -133,7 +139,7 @@ then
     # 修改 kubernetesVersion: v1.13.4
     # 修改 networking.podSubnet: 10.244.0.0/16
     # 配置外部etcd
-    #
+    # 添加 enable-admission-plugins: PodNodeSelector
     kubeadm init --config=/vagrant/yaml/kubeadm-init.yaml
     #
     # kubeadm init --apiserver-advertise-address=172.17.8.101 \
