@@ -22,6 +22,8 @@ nodeRegistration:
 
 apiServer:
   timeoutForControlPlane: 4m0s
+  extraArgs:
+    enable-admission-plugins: PodNodeSelector
 apiVersion: kubeadm.k8s.io/v1beta1
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
