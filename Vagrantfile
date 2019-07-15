@@ -30,7 +30,6 @@ Vagrant.configure("2") do |config|
       ip = "172.17.8.#{i+101}"
       node.vm.network "private_network", ip: ip
       node.vm.provider "virtualbox" do |vb|
-        # vb.memory = "5120"
         vb.memory = "4096"
         vb.cpus = 2
         vb.name = "kube-node#{i}"
@@ -39,4 +38,3 @@ Vagrant.configure("2") do |config|
     end
   end
 end
-

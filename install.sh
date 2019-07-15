@@ -92,14 +92,11 @@ source ~/.bash_profile
 # 18.06 yum install -y docker-ce-18.06.3.ce-3.el7
 # 18.09 yum install -y docker-ce docker-ce-cli containerd.io
 yum localinstall -y /vagrant/rpm/docker/*.rpm
-
 # 编辑systemctl的Docker启动文件，docker-1806后不需要此操作
 # sed -i "13i ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT" /usr/lib/systemd/system/docker.service
 # iptables -nvL
-
 systemctl enable --now docker
 
-# 1.13.1 yum install -y kubelet-1.13.1 kubeadm-1.13.1 kubectl-1.13.1 --disableexcludes=kubernetes
 # 1.13.4 yum install -y kubelet-1.13.4 kubeadm-1.13.4 kubectl-1.13.4 --disableexcludes=kubernetes
 yum localinstall -y /vagrant/rpm/kubeadm/*.rpm
 systemctl enable --now kubelet
