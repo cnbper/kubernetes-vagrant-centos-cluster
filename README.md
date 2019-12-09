@@ -15,10 +15,6 @@ vagrant up
 访问Kubernetes集群的方式有三种：
 
 - 本地访问
-- 在VM内部访问
-- Kubernetes dashboard
-
-**通过本地访问**
 
 ```shell
 rm -rf ~/.kube && mkdir -p ~/.kube
@@ -26,13 +22,18 @@ cp temp/kubernetes/admin.conf ~/.kube/config
 kubectl get nodes
 ```
 
-**在VM内部访问**
+- 在VM内部访问
 
 ```shell
 vagrant ssh kube-master
 sudo -i
 kubectl get nodes
 ```
+
+- Kubernetes dashboard
+
+<https://172.17.8.101:30001>
+<http://172.17.8.101:30002>
 
 ### 测试集群的各个组件
 
@@ -51,14 +52,14 @@ kubectl expose deployment nginx --port=80 --type=NodePort
 kubectl get services nginx
 ## 可以通过任意 NodeIP:Port 在集群外部访问这个服务：
 ## 注意调整端口
-curl 172.17.8.101:30698
+curl 172.17.8.101:31770
 
 # 最后验证一下dns, pod network是否正常：
 ## 运行Busybox并进入交互模式
 kubectl run -it curl --image=registry.sloth.com/radial/busyboxplus:curl
 
 ## 输入nslookup nginx查看是否可以正确解析出集群内的IP，以验证DNS是否正常
-$ nslookup nginx
+nslookup nginx
 ## 通过服务名进行访问，验证kube-proxy是否正常
-$ curl http://nginx/
+curl http://nginx/
 ```

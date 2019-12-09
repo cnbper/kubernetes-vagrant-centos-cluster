@@ -10,7 +10,7 @@ mv /etc/yum.repos.d/CentOS7-Base-163.repo /etc/yum.repos.d/CentOS-Base.repo
 # using socat to port forward in helm tiller
 # install kmod and ceph-common for rook
 # docker 依赖 container-selinux >= 2.9
-# yum install -y vim wget curl conntrack-tools net-tools telnet tcpdump bind-utils socat ntp kmod ceph-common dos2unix container-selinux ipset ipvsadm 
+# yum -y install --downloadonly --downloaddir=tools vim wget curl conntrack-tools net-tools telnet tcpdump bind-utils socat ntp kmod ceph-common dos2unix container-selinux ipset ipvsadm
 yum localinstall -y /vagrant/rpm/tools/*.rpm
 
 # 安装cfssl
@@ -37,6 +37,7 @@ cat >> /etc/hosts <<EOF
 172.17.8.102 kube-node1
 172.17.8.103 kube-node2
 192.168.110.200 registry.sloth.com
+172.20.10.2 nginx.sloth.com
 EOF
 cat /etc/hosts
 
@@ -90,15 +91,36 @@ EOF
 source ~/.bash_profile
 
 # 18.06 yum install -y docker-ce-18.06.3.ce-3.el7
-# 18.09 yum install -y docker-ce docker-ce-cli containerd.io
-yum localinstall -y /vagrant/rpm/docker/*.rpm
+# 18.09 yum -y install --downloadonly --downloaddir=docker docker-ce docker-ce-cli containerd.io
+# https://download.docker.com/linux/centos/7/x86_64/stable/Packages/
+yum localinstall -y /vagrant/rpm/docker/18.09/*.rpm
 # 编辑systemctl的Docker启动文件，docker-1806后不需要此操作
 # sed -i "13i ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT" /usr/lib/systemd/system/docker.service
 # iptables -nvL
+
+# 警告：[WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
+cat <<EOF >  /etc/docker/daemon.json
+{
+    "exec-opts":["native.cgroupdriver=systemd"],
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "100m"
+    },
+    "storage-driver": "overlay2",
+    "storage-opts": [
+        "overlay2.override_kernel_check=true"
+    ]
+}
+EOF
 systemctl enable --now docker
 
-# 1.13.4 yum install -y kubelet-1.13.4 kubeadm-1.13.4 kubectl-1.13.4 --disableexcludes=kubernetes
-yum localinstall -y /vagrant/rpm/kubeadm/*.rpm
+# 1.15.6 yum -y install --downloadonly --downloaddir=kubeadm/1.15.6 kubelet-1.15.6 kubeadm-1.15.6 kubectl-1.15.6 --disableexcludes=kubernetes
+yum localinstall -y /vagrant/rpm/kubeadm/1.15.6/*.rpm
+
+# Failed to get system container stats for "/system.slice/docker.service": failed to get cgroup stats for "/system.slice/docker.service": failed to get container info for "/system.slice/docker.service": unknown container "/system.slice/docker.service"
+cat > /etc/sysconfig/kubelet <<EOF
+KUBELET_EXTRA_ARGS=" --cgroup-driver=systemd --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice"
+EOF
 systemctl enable --now kubelet
 
 if [[ $1 -eq 1 ]]
@@ -111,6 +133,7 @@ then
     cp ca-key.pem /etc/kubernetes/pki/ca.key
 
     # 安装etcd
+    # wget https://github.com/etcd-io/etcd/releases/download/v3.3.10/etcd-v3.3.10-linux-amd64.tar.gz
     cp /vagrant/tools/etcd/etcd-linux-amd64/{etcd,etcdctl} /usr/local/sbin/
     cfssl gencert -ca=/etc/kubernetes/pki/ca.crt \
       -ca-key=/etc/kubernetes/pki/ca.key \
@@ -130,13 +153,15 @@ then
     echo "configure kube-master"
     # kubeadm config images list 
     # https://kubernetes.io/zh/docs/reference/setup-tools/kubeadm/kubeadm-init/
-    # kubeadm config print init-defaults --component-configs KubeletConfiguration KubeProxyConfiguration  > kubeadm-init.yaml
+    # https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-config/#cmd-config-print-init-defaults
+    # kubeadm config print init-defaults --component-configs KubeletConfiguration,KubeProxyConfiguration  > kubeadm-init.yaml
     # 修改 imageRepository: registry.sloth.com/google_containers
     # 修改 localAPIEndpoint.advertiseAddress: 172.17.8.101
-    # 修改 kubernetesVersion: v1.13.4
+    # 修改 kubernetesVersion: v1.15.6
     # 修改 networking.podSubnet: 10.244.0.0/16
     # 配置外部etcd
     # 添加 enable-admission-plugins: PodNodeSelector
+    # 修改 KubeProxyConfiguration.mode: "ipvs"
     kubeadm init --config=/vagrant/yaml/kubeadm-init.yaml
     #
     # kubeadm init --apiserver-advertise-address=172.17.8.101 \
@@ -162,13 +187,12 @@ EOF
     # node多网卡时，需要使用–iface参数指定集群主机内网网卡的名称，否则可能会出现dns无法解析。
     kubectl apply -f /vagrant/yaml/flannel/kube-flannel.yml
 
-    # kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
-    # spec:
-    #   type: NodePort
-    #   ports:
-    #     - port: 443
-    #       targetPort: 8443
-    #       nodePort: 30001
+    # https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+    # kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
+    # 调整image：registry.sloth.com/
+    # spec.type: NodePort
+    # spec.ports.nodePort: 30001
+    # spec.ports.nodePort: 30002
     kubectl apply -f /vagrant/yaml/dashboard/kubernetes-dashboard.yaml
     # 默认安装使用最小的访问权限，用户只能访问UI资源，需要创建可管理集群的ServiceAccount
     kubectl apply -f /vagrant/yaml/admin-role.yaml    
