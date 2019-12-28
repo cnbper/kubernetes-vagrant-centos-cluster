@@ -114,8 +114,9 @@ cat <<EOF >  /etc/docker/daemon.json
 EOF
 systemctl enable --now docker
 
-# 1.15.6 yum -y install --downloadonly --downloaddir=kubeadm/1.15.6 kubelet-1.15.6 kubeadm-1.15.6 kubectl-1.15.6 --disableexcludes=kubernetes
-yum localinstall -y /vagrant/rpm/kubeadm/1.15.6/*.rpm
+# 1.15.6 yum -y install --downloadonly --downloaddir=/vagrant/rpm/kubeadm/1.15.6 kubelet-1.15.6 kubeadm-1.15.6 kubectl-1.15.6 --disableexcludes=kubernetes
+# 1.15.4 yum -y install --downloadonly --downloaddir=/vagrant/rpm/kubeadm/1.15.4 kubelet-1.15.4 kubeadm-1.15.4 kubectl-1.15.4 --disableexcludes=kubernetes
+yum localinstall -y /vagrant/rpm/kubeadm/1.15.4/*.rpm
 
 # Failed to get system container stats for "/system.slice/docker.service": failed to get cgroup stats for "/system.slice/docker.service": failed to get container info for "/system.slice/docker.service": unknown container "/system.slice/docker.service"
 cat > /etc/sysconfig/kubelet <<EOF
@@ -162,7 +163,7 @@ then
     # 配置外部etcd
     # 添加 enable-admission-plugins: PodNodeSelector
     # 修改 KubeProxyConfiguration.mode: "ipvs"
-    kubeadm init --config=/vagrant/yaml/kubeadm-init.yaml
+    kubeadm init --config=/vagrant/yaml/kubeadm-init-v1.15.4.yaml
     #
     # kubeadm init --apiserver-advertise-address=172.17.8.101 \
     #   --kubernetes-version v1.13.4 \
@@ -188,7 +189,7 @@ EOF
     kubectl apply -f /vagrant/yaml/flannel/kube-flannel.yml
 
     # https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
-    # kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
+    # kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
     # 调整image：registry.sloth.com/
     # spec.type: NodePort
     # spec.ports.nodePort: 30001
