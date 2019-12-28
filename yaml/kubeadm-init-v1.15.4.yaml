@@ -29,8 +29,12 @@ controllerManager: {}
 dns:
   type: CoreDNS
 etcd:
-  local:
-    dataDir: /var/lib/etcd
+  external:
+    endpoints:
+      - https://172.17.8.101:2379
+    caFile: /etc/kubernetes/pki/ca.crt
+    certFile: /etc/kubernetes/pki/etcd.pem
+    keyFile: /etc/kubernetes/pki/etcd-key.pem
 imageRepository: registry.sloth.com/google_containers
 kind: ClusterConfiguration
 kubernetesVersion: v1.15.4
