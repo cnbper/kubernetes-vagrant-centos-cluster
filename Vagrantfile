@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
       vb.cpus = 2
       vb.name = "kube-master"
     end
-    node.vm.provision "shell", path: "install.sh", args: [1, $master_ip, $etcd_cluster]
+    node.vm.provision "shell", path: "install-1.11.0.sh", args: [1, $master_ip, $etcd_cluster]
   end
 
   $node_instances=2
@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
         vb.cpus = 2
         vb.name = "kube-node#{i}"
       end
-      node.vm.provision "shell", path: "install.sh", args: [i+1, ip, $etcd_cluster]
+      node.vm.provision "shell", path: "install-1.11.0.sh", args: [i+1, ip, $etcd_cluster]
     end
   end
 end

@@ -21,3 +21,8 @@ docker tag kubernetesui/${module} ${RemoteRegistry}/kubernetesui/${module}
 docker push ${RemoteRegistry}/kubernetesui/${module}
 docker rmi ${RemoteRegistry}/kubernetesui/${module}
 done
+
+docker pull jediz90/metrics-server-amd64:v0.3.6
+docker tag jediz90/metrics-server-amd64:v0.3.6 ${RemoteRegistry}/google_containers/metrics-server-amd64:v0.3.6
+docker push ${RemoteRegistry}/google_containers/metrics-server-amd64:v0.3.6
+docker rmi ${RemoteRegistry}/google_containers/metrics-server-amd64:v0.3.6

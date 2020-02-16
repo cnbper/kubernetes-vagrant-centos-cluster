@@ -1,0 +1,25 @@
+apiVersion: kubeadm.k8s.io/v1alpha2
+kind: MasterConfiguration
+clusterName: kubernetes
+kubernetesVersion: v1.11.10
+imageRepository: registry.sloth.com/google_containers
+api:
+  advertiseAddress: 172.17.8.101
+  bindPort: 6443
+kubeProxy:
+  config:
+    mode: ipvs
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 10.244.0.0/16
+  serviceSubnet: 10.96.0.0/16
+etcd:
+  external:
+    endpoints:
+      - https://172.17.8.101:2379
+    caFile: /etc/kubernetes/pki/ca.crt
+    certFile: /etc/kubernetes/pki/etcd.pem
+    keyFile: /etc/kubernetes/pki/etcd-key.pem
+certificatesDir: /etc/kubernetes/pki
+dns:
+  type: CoreDNS
